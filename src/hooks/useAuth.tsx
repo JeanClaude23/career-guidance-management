@@ -1,6 +1,5 @@
 import { useState, useEffect, createContext, useContext } from 'react'
-import { supabase } from '@/lib/supabase'
-import type { User } from '@supabase/supabase-js'
+import { LocalAuth, type User } from '@/lib/auth'
 
 interface AuthContextType {
   user: User | null
@@ -16,34 +15,39 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
+    // Get initial session from local auth
+    const session = LocalAuth.getSession()
+    setUser(session?.user ?? null)
+    setLoading(false)
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+    // Listen for storage changes (for multi-tab support)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'auth_session') {
+        const session = LocalAuth.getSession()
         setUser(session?.user ?? null)
-        setLoading(false)
       }
-    )
+    }
 
-    return () => subscription.unsubscribe()
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
   }, [])
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-    if (error) throw error
+    try {
+      const session = await LocalAuth.signIn(email, password)
+      setUser(session.user)
+    } catch (error) {
+      throw error
+    }
   }
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut()
-    if (error) throw error
+    try {
+      await LocalAuth.signOut()
+      setUser(null)
+    } catch (error) {
+      throw error
+    }
   }
 
   return (
