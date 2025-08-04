@@ -24,6 +24,19 @@ const Layout = ({ children }: LayoutProps) => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
 
+  // Get user display name from our auth system
+  const getUserDisplayName = () => {
+    if (user?.name) return user.name;
+    if (user?.email) return user.email.split('@')[0];
+    return 'Admin User';
+  };
+
+  // Get user initials for avatar
+  const getUserInitials = () => {
+    const name = getUserDisplayName();
+    return name.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 2);
+  };
+
   const handleSignOut = async () => {
     try {
       await signOut();
@@ -54,76 +67,93 @@ const Layout = ({ children }: LayoutProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <div className="hidden xl:block fixed inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div 
-          className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r transform ${
+      {/* Enhanced Sidebar */}
+      <div className={`fixed inset-y-0 left-0 z-50 w-72 bg-gradient-to-b from-white to-slate-50 dark:from-slate-900 dark:to-slate-800 border-r border-slate-200 dark:border-slate-700 shadow-xl transform ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      } transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
-        <div className="flex items-center justify-between h-16 px-6 border-b">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <GraduationCap className="w-5 h-5 text-primary-foreground" />
+      } transition-all duration-300 ease-in-out lg:translate-x-0`}>
+        <div className="flex items-center justify-between h-20 px-6 border-b border-slate-200 dark:border-slate-700">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+              <GraduationCap className="w-6 h-6 text-white" />
             </div>
-            <span className="font-bold text-lg text-foreground">CGMIS</span>
+            <div>
+              <span className="font-bold text-xl text-foreground">CGMIS</span>
+              <p className="text-xs text-muted-foreground">Career Guidance</p>
+            </div>
           </div>
           <Button
             variant="ghost"
             size="sm"
-            className="lg:hidden"
+            className="lg:hidden hover:bg-slate-100 dark:hover:bg-slate-800"
             onClick={() => setSidebarOpen(false)}
           >
             <X className="w-5 h-5" />
           </Button>
         </div>
 
-        <nav className="mt-6 px-3">
-          <ul className="space-y-1">
+        <nav className="mt-8 px-4">
+          <div className="space-y-2">
             {navigation.map((item) => {
               const Icon = item.icon;
+              const active = isActive(item.href);
               return (
-                <li key={item.name}>
-                  <Link
-                    to={item.href}
-                    className={`flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                      isActive(item.href)
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-                    }`}
-                    onClick={() => setSidebarOpen(false)}
-                  >
-                    <Icon className="w-5 h-5 mr-3" />
-                    {item.name}
-                  </Link>
-                </li>
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className={`flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group ${
+                    active
+                      ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/25'
+                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 hover:shadow-md'
+                  }`}
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  <Icon className={`w-5 h-5 mr-4 transition-transform duration-200 ${
+                    active ? 'text-white' : 'text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300'
+                  } ${active ? 'scale-110' : 'group-hover:scale-105'}`} />
+                  <span className="font-medium">{item.name}</span>
+                  {active && (
+                    <div className="ml-auto w-2 h-2 bg-white rounded-full animate-pulse" />
+                  )}
+                </Link>
               );
             })}
-          </ul>
+          </div>
         </nav>
 
-        <div className="absolute bottom-6 left-3 right-3">
-          <div className="bg-accent/50 rounded-lg p-4">
+        <div className="absolute bottom-6 left-4 right-4">
+          <div className="bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-4 border border-slate-200 dark:border-slate-600 shadow-lg">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                <span className="text-sm font-medium text-primary-foreground">AD</span>
+              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-sm font-bold text-white">{getUserInitials()}</span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">
-                  {user?.user_metadata?.full_name || 'Admin User'}
+                <p className="text-sm font-semibold text-foreground truncate">
+                  {getUserDisplayName()}
                 </p>
                 <p className="text-xs text-muted-foreground truncate">
-                  {user?.email || 'admin@hopehaven.org'}
+                  {user?.email || 'admin@cgmis.local'}
                 </p>
+                <div className="flex items-center mt-1">
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse mr-2" />
+                  <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Online</span>
+                </div>
               </div>
-              <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleSignOut}
+                className="hover:bg-red-100 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                title="Sign Out"
+              >
                 <LogOut className="w-4 h-4" />
               </Button>
             </div>
@@ -132,31 +162,37 @@ const Layout = ({ children }: LayoutProps) => {
       </div>
 
       {/* Main content */}
-      <div className="lg:pl-64 relative z-10">
-        {/* Top header */}
-        <header className="bg-card border-b h-16 flex items-center justify-between px-6">
+      <div className="lg:pl-72 relative z-10">
+        {/* Enhanced Top header */}
+        <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 h-20 flex items-center justify-between px-6 sticky top-0 z-30">
           <div className="flex items-center">
             <Button
               variant="ghost"
               size="sm"
-              className="lg:hidden mr-2"
+              className="lg:hidden mr-3 hover:bg-slate-100 dark:hover:bg-slate-800"
               onClick={() => setSidebarOpen(true)}
             >
               <Menu className="w-5 h-5" />
             </Button>
-            <h1 className="text-xl font-semibold text-foreground">
-              Career Guidance Management System
-            </h1>
+            <div>
+              <h1 className="text-xl font-bold text-foreground">
+                Career Guidance Management System
+              </h1>
+              <p className="text-sm text-muted-foreground hidden sm:block">
+                Hope Haven Leadership Institute
+              </p>
+            </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-muted-foreground hidden sm:block">
-              Hope Haven Leadership Institute
-            </span>
+          <div className="flex items-center space-x-4">
+            <div className="hidden md:flex items-center gap-2 px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg">
+              <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+              <span className="text-sm font-medium text-foreground">System Online</span>
+            </div>
           </div>
         </header>
 
         {/* Page content */}
-        <main className="p-4 lg:p-6 xl:p-8 max-w-7xl mx-auto">
+        <main className="p-6 lg:p-8 xl:p-10 max-w-7xl mx-auto">
           {children}
         </main>
       </div>

@@ -74,7 +74,7 @@ const Login = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@hopehaven.org"
+                  placeholder="email@example.com"
                   required
                   disabled={loading}
                 />
@@ -87,7 +87,7 @@ const Login = () => {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
+                  placeholder="password"
                   required
                   disabled={loading}
                 />
@@ -111,7 +111,10 @@ const Login = () => {
 
             <div className="mt-6 pt-4 border-t text-center">
               <p className="text-xs text-muted-foreground">
-                Demo credentials: admin@hopehaven.org / password123
+                <span className="font-medium text-green-600">Development Mode:</span> Use any email and password to access the dashboard
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Example: test@example.com / any_password
               </p>
             </div>
           </CardContent>

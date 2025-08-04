@@ -39,21 +39,36 @@ let currentSession: AuthSession | null = null;
 export class LocalAuth {
   // Sign in with email and password
   static async signIn(email: string, password: string): Promise<AuthSession> {
-    // Simple mock authentication - replace with your actual authentication
-    const user = mockUsers.find(u => u.email === email);
+    // DEVELOPMENT MODE: Accept any email and password for testing
+    // TODO: Replace with actual authentication when database endpoints are ready
     
-    if (!user) {
-      throw new Error('User not found');
+    // Basic validation
+    if (!email || email.length < 1) {
+      throw new Error('Email is required');
+    }
+    
+    if (!password || password.length < 1) {
+      throw new Error('Password is required');
     }
 
-    // Simple password check - replace with proper password verification
-    if (password.length < 1) {
-      throw new Error('Invalid password');
+    // Create a dynamic user based on the email provided
+    // This allows any email/password combination to work
+    let user = mockUsers.find(u => u.email === email);
+    
+    // If user doesn't exist in mock data, create a temporary one
+    if (!user) {
+      user = {
+        id: `temp_${Date.now()}`,
+        email: email,
+        name: email.split('@')[0], // Use part before @ as name
+        role: 'user',
+        created_at: new Date().toISOString()
+      };
     }
 
     const session: AuthSession = {
       user,
-      token: `mock_token_${user.id}_${Date.now()}`,
+      token: `dev_token_${user.id}_${Date.now()}`,
       expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
     };
 
