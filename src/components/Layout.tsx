@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Users, 
   BarChart3, 
@@ -19,6 +21,24 @@ interface LayoutProps {
 const Layout = ({ children }: LayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const { user, signOut } = useAuth();
+  const { toast } = useToast();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Signed out successfully",
+        description: "You have been logged out of the system.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to sign out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const navigation = [
     { name: 'Dashboard', href: '/', icon: Home },
@@ -35,6 +55,7 @@ const Layout = ({ children }: LayoutProps) => {
 
   return (
     <div className="min-h-screen bg-muted/30">
+      <div className="hidden xl:block fixed inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div 
@@ -96,13 +117,13 @@ const Layout = ({ children }: LayoutProps) => {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground truncate">
-                  Admin User
+                  {user?.user_metadata?.full_name || 'Admin User'}
                 </p>
                 <p className="text-xs text-muted-foreground truncate">
-                  admin@hopehaven.org
+                  {user?.email || 'admin@hopehaven.org'}
                 </p>
               </div>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" onClick={handleSignOut}>
                 <LogOut className="w-4 h-4" />
               </Button>
             </div>
@@ -111,7 +132,7 @@ const Layout = ({ children }: LayoutProps) => {
       </div>
 
       {/* Main content */}
-      <div className="lg:pl-64">
+      <div className="lg:pl-64 relative z-10">
         {/* Top header */}
         <header className="bg-card border-b h-16 flex items-center justify-between px-6">
           <div className="flex items-center">
@@ -135,7 +156,7 @@ const Layout = ({ children }: LayoutProps) => {
         </header>
 
         {/* Page content */}
-        <main className="p-6">
+        <main className="p-4 lg:p-6 xl:p-8 max-w-7xl mx-auto">
           {children}
         </main>
       </div>
